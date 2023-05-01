@@ -11,7 +11,7 @@ class nexus::package {
   $dl_file         = "${nexus::download_folder}/${nexus_archive}"
   $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
 
-  extlib::mkdir_p($nexus::install_root)
+  # extlib::mkdir_p($nexus::install_root)
 
   archive { $dl_file:
     source        => $download_url,
