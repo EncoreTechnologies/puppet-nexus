@@ -10,6 +10,7 @@ class nexus::package {
   $download_url    = "${nexus::download_site}/${nexus_archive}"
   $dl_file         = "${nexus::download_folder}/${nexus_archive}"
   $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
+  $nexus_rc        = "${nexus::install_dir}/bin/nexus.rc"
 
   # extlib::mkdir_p($nexus::install_root)
 
@@ -67,6 +68,12 @@ class nexus::package {
       owner   => $nexus::user,
       group   => $nexus::group,
       require => Archive[$dl_file],
+    }
+  }
+
+  if $nexus::manage_user {
+    file { $nexus_rc:
+      content => "run_as_user=\"${nexus::user}\""
     }
   }
 }
