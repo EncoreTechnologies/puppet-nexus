@@ -17,7 +17,7 @@ class nexus::package {
   archive { $dl_file:
     source        => $download_url,
     extract       => true,
-    extract_path  => $nexus::install_root,
+    extract_path  => "${nexus::install_root}/nexus",
     checksum_url  => "${download_url}.sha1",
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
@@ -57,6 +57,7 @@ class nexus::package {
   if $nexus::manage_work_dir {
     $directories = [
       $nexus::work_dir,
+      $nexus::install_root,
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
       "${nexus::work_dir}/orient",
