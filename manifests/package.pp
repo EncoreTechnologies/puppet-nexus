@@ -17,8 +17,8 @@ class nexus::package {
   file {$install_dir:
     ensure  => 'directory',
     mode    => '0755',
-    owner   => 'nexus',
-    group   => 'nexus',
+    owner   => $nexus::user,
+    group   => $nexus::group,
     require => Class['nexus::user'],
     before  => Archive[$dl_file],
   }
