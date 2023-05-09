@@ -22,8 +22,8 @@ class nexus::package {
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
     creates       => $install_dir,
-    user          => 'root',
-    group         => 'root',
+    user          => $nexus::user,
+    group         => $nexus::group,
   }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
