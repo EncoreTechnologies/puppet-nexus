@@ -30,8 +30,8 @@ class nexus::package {
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
     creates       => "${install_dir}/bin",
-    user          => $nexus::user,
-    group         => $nexus::group,
+    user          => 'root',
+    group         => 'root',
     require       => File[$install_dir],
   }
 
