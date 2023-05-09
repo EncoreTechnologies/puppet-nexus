@@ -14,10 +14,19 @@ class nexus::package {
 
   # extlib::mkdir_p($nexus::install_root)
 
+  file {$install_dir:
+    ensure  => 'directory',
+    mode    => '0755',
+    owner   => 'nexus',
+    group   => 'nexus',
+    require => Class['nexus::user'],
+    before  => Archive[$dl_file],
+  }
+
   archive { $dl_file:
     source        => $download_url,
     extract       => true,
-    extract_path  => "${nexus::install_root}/nexus",
+    extract_path  => $nexus::install_root,
     checksum_url  => "${download_url}.sha1",
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
@@ -57,7 +66,6 @@ class nexus::package {
   if $nexus::manage_work_dir {
     $directories = [
       $nexus::work_dir,
-      "${nexus::install_root}/nexus",
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
       "${nexus::work_dir}/orient",
