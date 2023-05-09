@@ -29,7 +29,7 @@ class nexus::package {
     checksum_url  => "${download_url}.sha1",
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
-    creates       => $install_dir,
+    creates       => "${install_dir}/bin",
     user          => $nexus::user,
     group         => $nexus::group,
     require       => File[$install_dir],
