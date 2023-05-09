@@ -20,7 +20,6 @@ class nexus::package {
     owner   => $nexus::user,
     group   => $nexus::group,
     require => Class['nexus::user'],
-    before  => Archive[$dl_file],
   }
 
   archive { $dl_file:
@@ -33,6 +32,7 @@ class nexus::package {
     creates       => $install_dir,
     user          => $nexus::user,
     group         => $nexus::group,
+    require       => File[$install_dir],
   }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
