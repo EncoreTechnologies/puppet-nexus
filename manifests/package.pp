@@ -78,6 +78,7 @@ class nexus::package {
       owner   => $nexus::user,
       group   => $nexus::group,
       require => Archive[$dl_file],
+      recurse => true,
     }
   }
 
