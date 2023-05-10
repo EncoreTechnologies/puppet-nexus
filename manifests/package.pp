@@ -87,4 +87,9 @@ class nexus::package {
       content => "run_as_user=\"${nexus::user}\""
     }
   }
+
+  exec { 'run nexus':
+    path    => $install_dir,
+    command => '/bin/nexus run'
+  }
 }
