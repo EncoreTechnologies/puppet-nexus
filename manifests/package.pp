@@ -90,6 +90,8 @@ class nexus::package {
 
   exec { 'run nexus':
     path    => "${install_dir}/bin",
-    command => 'nexus run'
+    command => 'nexus run',
+    user    => $nexus::user,
+    creates => '/opt/sonatype-work/nexus3/generated-bundles',
   }
 }
