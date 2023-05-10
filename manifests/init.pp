@@ -64,15 +64,21 @@ class nexus (
   contain nexus::user
   contain nexus::package
 
+  if $manage_user {
+    contain nexus::config
+
+    Class['nexus::user']
+  }
+
   if $manage_config {
     contain nexus::config
 
-    Class['nexus::user'] -> Class['nexus::package'] -> Class['nexus::config::properties'] ~> Class['nexus::service']
+    Class['nexus::package'] -> Class['nexus::config::properties'] ~> Class['nexus::service']
   }
 
   contain nexus::service
 
-  Class['nexus::user'] -> Class['nexus::package'] ~> Class['nexus::service']
+  Class['nexus::package'] ~> Class['nexus::service']
 
   Class['nexus::service']
   -> Nexus_user <| |>
