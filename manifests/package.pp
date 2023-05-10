@@ -89,7 +89,7 @@ class nexus::package {
   }
 
   exec { 'run nexus':
-    path    => $install_dir,
-    command => '/bin/nexus run'
+    path    => "${install_dir}/bin",
+    command => 'nexus run'
   }
 }
