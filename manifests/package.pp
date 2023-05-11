@@ -93,5 +93,9 @@ class nexus::package {
     command => 'nexus run',
     user    => $nexus::user,
     creates => '/opt/sonatype-work/nexus3/generated-bundles',
+    require => [
+      File["${nexus::install_root}/.java"],
+      File["${nexus::install_root}/.java/.userPrefs"]
+    ]
   }
 }
