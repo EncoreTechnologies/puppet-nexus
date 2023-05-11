@@ -19,6 +19,7 @@ class nexus::package {
     mode    => '0755',
     owner   => $nexus::user,
     group   => $nexus::group,
+    recurse => true,
     require => Class['nexus::user'],
     before  => Class['nexus::service'],
   }
