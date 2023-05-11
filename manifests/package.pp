@@ -81,7 +81,6 @@ class nexus::package {
 
   if $nexus::manage_work_dir {
     $directories = [
-      $nexus::work_dir,
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
       "${nexus::work_dir}/nexus3",
