@@ -20,6 +20,7 @@ class nexus::package {
     owner   => $nexus::user,
     group   => $nexus::group,
     require => Class['nexus::user'],
+    before  => Class['nexus::service'],
   }
 
   archive { $dl_file:
@@ -65,6 +66,7 @@ class nexus::package {
 
   if $nexus::manage_work_dir {
     $directories = [
+      $install_dir,
       $nexus::work_dir,
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
