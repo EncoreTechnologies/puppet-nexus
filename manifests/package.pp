@@ -87,15 +87,4 @@ class nexus::package {
       content => "run_as_user=\"${nexus::user}\""
     }
   }
-
-  exec { 'run nexus':
-    path    => "${install_dir}/bin",
-    command => 'nexus run',
-    user    => $nexus::user,
-    creates => '/opt/sonatype-work/nexus3/generated-bundles',
-    require => [
-      File["${nexus::install_root}/.java"],
-      File["${nexus::install_root}/.java/.userPrefs"]
-    ]
-  }
 }
