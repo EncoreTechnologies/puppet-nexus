@@ -46,9 +46,11 @@ class nexus::package {
   }
 
   exec { 'nexus permissions':
-    command   => "chown ${nexus::user}:${nexus::group} ${install_dir}",
+    command   => "chown -R ${nexus::user}:${nexus::group} ${install_dir}",
     path      => '/bin',
     subscribe => Archive[$dl_file],
+    before    => Class['nexus::service'],
+    require   => Archive[$dl_file],
   }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
@@ -94,6 +96,7 @@ class nexus::package {
       group   => $nexus::group,
       require => Archive[$dl_file],
       recurse => true,
+      before  => Class['nexus::service'],
     }
   }
 
