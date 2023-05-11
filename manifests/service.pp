@@ -14,11 +14,10 @@ class nexus::service {
     group   => 'root',
     content => template('nexus/nexus.systemd.erb'),
   }
-  -> exec { 'run nexus':
-    path    => "${install_dir}/bin",
-    command => 'nexus run',
+  -> exec { "${install_dir}/bin/nexus run":
     user    => $nexus::user,
     creates => '/opt/sonatype-work/nexus3/generated-bundles',
+    timeout => 600,
     require => [
       File["${nexus::install_root}/.java"],
       File["${nexus::install_root}/.java/.userPrefs"]

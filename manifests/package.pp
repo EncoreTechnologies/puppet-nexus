@@ -20,7 +20,10 @@ class nexus::package {
     owner   => $nexus::user,
     group   => $nexus::group,
     recurse => true,
-    require => Class['nexus::user'],
+    require => [
+      Class['nexus::user'],
+      Archive[$dl_file],
+    ],
     before  => Class['nexus::service'],
   }
 
@@ -32,10 +35,15 @@ class nexus::package {
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
     creates       => "${install_dir}/bin",
-    user          => 'root',
-    group         => 'root',
+    user          => $nexus::user,
+    group         => $nexus::group,
     require       => File[$install_dir],
   }
+
+  # exec { 'nexus permissions':
+  #   command   => "chown ${nexus::user}:${nexus::group} ${install_dir}",
+  #   subscribe => Archive[$dl_file],
+  # }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
   file { ["${nexus::install_root}/.java", "${nexus::install_root}/.java/.userPrefs"]:
