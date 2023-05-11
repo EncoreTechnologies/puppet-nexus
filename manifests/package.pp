@@ -14,18 +14,23 @@ class nexus::package {
 
   # extlib::mkdir_p($nexus::install_root)
 
-  file {$install_dir:
-    ensure  => 'directory',
-    mode    => '0755',
-    owner   => $nexus::user,
-    group   => $nexus::group,
-    recurse => true,
-    require => [
-      Class['nexus::user'],
-      Archive[$dl_file],
-    ],
-    before  => Class['nexus::service'],
-  }
+  # file {$install_dir:
+  #   ensure  => 'directory',
+  #   mode    => '0755',
+  #   owner   => $nexus::user,
+  #   group   => $nexus::group,
+  #   recurse => true,
+  #   require => [
+  #     Class['nexus::user'],
+  #     Archive[$dl_file],
+  #   ],
+  #   before  => Class['nexus::service'],
+  # }
+
+  # file { "opt/nexus-${nexus::version}":
+  #   ensure => 'link',
+  #   target => $install_dir
+  # }
 
   archive { $dl_file:
     source        => $download_url,
@@ -35,15 +40,16 @@ class nexus::package {
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
     creates       => "${install_dir}/bin",
-    user          => $nexus::user,
-    group         => $nexus::group,
-    require       => File[$install_dir],
+    user          => 'root',
+    group         => 'root',
+    #require       => File[$install_dir],
   }
 
-  # exec { 'nexus permissions':
-  #   command   => "chown ${nexus::user}:${nexus::group} ${install_dir}",
-  #   subscribe => Archive[$dl_file],
-  # }
+  exec { 'nexus permissions':
+    command   => "chown ${nexus::user}:${nexus::group} ${install_dir}",
+    path      => '/bin',
+    subscribe => Archive[$dl_file],
+  }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
   file { ["${nexus::install_root}/.java", "${nexus::install_root}/.java/.userPrefs"]:

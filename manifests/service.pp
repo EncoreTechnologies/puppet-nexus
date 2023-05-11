@@ -17,7 +17,6 @@ class nexus::service {
   -> exec { "${install_dir}/bin/nexus run":
     user    => $nexus::user,
     creates => '/opt/sonatype-work/nexus3/generated-bundles',
-    timeout => 600,
     require => [
       File["${nexus::install_root}/.java"],
       File["${nexus::install_root}/.java/.userPrefs"]
