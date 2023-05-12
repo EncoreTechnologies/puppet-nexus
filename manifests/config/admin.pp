@@ -17,12 +17,12 @@
 #   include nexus::config::admin
 #
 class nexus::config::admin (
-  String[1] $username = 'admin',
+  String[1] $username = $nexus::admin_username,
   String[1] $first_name = 'Administrator',
   String[1] $last_name = 'User',
   String[1] $email_address = 'admin@example.org',
   Array[String[1]] $roles = ['nx-admin'],
-  Optional[Variant[String[1], Sensitive[String[1]]]] $password = undef,
+  Optional[Variant[String[1], Sensitive[String[1]]]] $password = $nexus::admin_password,
 ) {
   if $password {
     $real_password = $password

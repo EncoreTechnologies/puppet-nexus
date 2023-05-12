@@ -50,6 +50,8 @@ class nexus (
   Stdlib::Absolutepath $work_dir,
   String[1] $user,
   String[1] $group,
+  String[1] $admin_username,
+  String[1] $admin_password,
   Stdlib::Host $host,
   Stdlib::Port $port,
   Boolean $manage_api_resources,
