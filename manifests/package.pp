@@ -29,7 +29,7 @@ class nexus::package {
     path      => '/bin',
     subscribe => Archive[$dl_file],
     require   => Archive[$dl_file],
-    onlyif    => "[ '$(stat -c \"%U\" \"${install_dir}\")' != '${nexus::user}' ]"
+    onlyif    => "[ $(stat -c '%U' '${install_dir}') != '${nexus::user}' ]",
   }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
