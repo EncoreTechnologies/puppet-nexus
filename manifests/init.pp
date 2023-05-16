@@ -87,7 +87,7 @@ class nexus (
 
   contain nexus::service
 
-  Class['nexus::package'] ~> Class['nexus::service']
+  Class['nexus::package'] -> Class['nexus::service']
 
   Class['nexus::service']
   -> Nexus_user <| |>

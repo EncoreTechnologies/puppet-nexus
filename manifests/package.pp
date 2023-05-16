@@ -12,26 +12,6 @@ class nexus::package {
   $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
   $nexus_rc        = "${install_dir}/bin/nexus.rc"
 
-  # extlib::mkdir_p($nexus::install_root)
-
-  # file {$install_dir:
-  #   ensure  => 'directory',
-  #   mode    => '0755',
-  #   owner   => $nexus::user,
-  #   group   => $nexus::group,
-  #   recurse => true,
-  #   require => [
-  #     Class['nexus::user'],
-  #     Archive[$dl_file],
-  #   ],
-  #   before  => Class['nexus::service'],
-  # }
-
-  # file { "opt/nexus-${nexus::version}":
-  #   ensure => 'link',
-  #   target => $install_dir
-  # }
-
   archive { $dl_file:
     source        => $download_url,
     extract       => true,
@@ -42,15 +22,14 @@ class nexus::package {
     creates       => "${install_dir}/bin",
     user          => 'root',
     group         => 'root',
-    #require       => File[$install_dir],
   }
 
   exec { 'nexus permissions':
     command   => "chown -R ${nexus::user}:${nexus::group} ${install_dir}",
     path      => '/bin',
     subscribe => Archive[$dl_file],
-    before    => Class['nexus::service'],
     require   => Archive[$dl_file],
+    onlyif    => "[ '$(stat -c \"%U\" \"${install_dir}\")' != '${nexus::user}' ]"
   }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
