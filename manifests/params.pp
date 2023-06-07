@@ -1,0 +1,27 @@
+class nexus::params {
+  $version = undef
+  $download_folder = '/opt/sonatype'
+  $download_site = 'https://download.sonatype.com/nexus/3'
+  $download_proxy = undef
+  $install_root = '/opt/sonatype'
+  $work_dir = "%{lookup('nexus::install_root')}/sonatype-work/nexus3"
+  $user = 'nexus'
+  $group = 'nexus'
+  $admin_password = ''
+  $admin_username = ''
+  $admin_firstname = 'Administrator'
+  $admin_lastname = 'User'
+  $admin_email = 'admin@example.org'
+  $admin_roles = ['nx-admin']
+  $host = '127.0.0.1'
+  $port = 8081
+  $manage_api_resources = false
+  $manage_config = true
+  $manage_user = true
+  $manage_work_dir = true
+  $purge_installations = true
+  $purge_default_repositories = false
+  $enable_anonymous = false
+  $anonymous_id = 'anonymous'
+  $anonymous_realmname = 'NexusAuthorizingRealm'
+}

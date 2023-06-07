@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0]
+### Added
+- `params.pp` to manage params in module
+- `exec['nexus permissions']` in `nexus::package` to manage file permissions
+- `manage_user` in `params.pp` to manage the nexus user
+
+### Changed
+- Reworking module to conform to newer standards
+
 ## [3.5.0]
 ### Added
 - `docker_subdomain` in `nexus::resource::repository::docker::proxy`

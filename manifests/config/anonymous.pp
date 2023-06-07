@@ -11,9 +11,9 @@
 #   include nexus::config::anonymous
 #
 class nexus::config::anonymous (
-  Boolean $enabled = false,
-  String[1] $user_id = 'anonymous',
-  String[1] $realm_name = 'NexusAuthorizingRealm',
+  Boolean   $enabled    = $nexus::enable_anonymous,
+  String[1] $user_id    = $nexus::anonymous_id,
+  String[1] $realm_name = $nexus::anonymous_realmname,
 ) {
   nexus_setting { 'security/anonymous':
     attributes => {

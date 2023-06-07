@@ -6,6 +6,8 @@
 class nexus::service {
   assert_private()
 
+  $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
+
   file { '/lib/systemd/system/nexus.service':
     mode    => '0644',
     owner   => 'root',
@@ -13,8 +15,9 @@ class nexus::service {
     content => template('nexus/nexus.systemd.erb'),
   }
   -> service { 'nexus':
-    ensure => running,
-    name   => 'nexus',
-    enable => true,
+    ensure  => running,
+    name    => 'nexus',
+    enable  => true,
+    require => Exec['nexus permissions'],
   }
 }

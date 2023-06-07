@@ -10,8 +10,7 @@ class nexus::package {
   $download_url    = "${nexus::download_site}/${nexus_archive}"
   $dl_file         = "${nexus::download_folder}/${nexus_archive}"
   $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
-
-  extlib::mkdir_p($nexus::install_root)
+  $nexus_rc        = "${install_dir}/bin/nexus.rc"
 
   archive { $dl_file:
     source        => $download_url,
@@ -20,9 +19,17 @@ class nexus::package {
     checksum_url  => "${download_url}.sha1",
     checksum_type => 'sha1',
     proxy_server  => $nexus::download_proxy,
-    creates       => $install_dir,
+    creates       => "${install_dir}/bin",
     user          => 'root',
     group         => 'root',
+  }
+
+  exec { 'nexus permissions':
+    command   => "chown -R ${nexus::user}:${nexus::group} ${install_dir}",
+    path      => '/bin',
+    subscribe => Archive[$dl_file],
+    require   => Archive[$dl_file],
+    onlyif    => "[ $(stat -c '%U' '${install_dir}') != '${nexus::user}' ]",
   }
 
   # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
@@ -55,9 +62,9 @@ class nexus::package {
 
   if $nexus::manage_work_dir {
     $directories = [
-      $nexus::work_dir,
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
+      "${nexus::work_dir}/nexus3",
       "${nexus::work_dir}/orient",
       "${nexus::work_dir}/tmp",
     ]
@@ -67,6 +74,14 @@ class nexus::package {
       owner   => $nexus::user,
       group   => $nexus::group,
       require => Archive[$dl_file],
+      recurse => true,
+      before  => Class['nexus::service'],
+    }
+  }
+
+  if $nexus::manage_user {
+    file { $nexus_rc:
+      content => "run_as_user=\"${nexus::user}\""
     }
   }
 }
