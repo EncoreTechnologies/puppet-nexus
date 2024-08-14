@@ -64,7 +64,6 @@ class nexus::package {
     $directories = [
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
-      "${nexus::work_dir}/nexus3",
       "${nexus::work_dir}/orient",
       "${nexus::work_dir}/tmp",
     ]
