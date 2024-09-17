@@ -1,44 +1,40 @@
-# @summary Resource to manage yum hosted repository
+# @summary
+#  Resource to manage raw hosted repository
 #
 # @param ensure
 #   Define if the resource should be created/present or deleted/absent.
 # @param online
-#   Allow incoming requests to this repository.
+#   Whether this repository accepts incoming requests.
 # @param storage_blob_store_name
 #   The name of the blobstore inside of nexus repository manager to be used. We suggest to use a own blobstore for each
 #   defined repository.
 # @param storage_strict_content_type_validation
-#   Validate that all content uploaded to this repository is of a MIME type appropriate for the repository format.
+#   Whether to validate uploaded content's MIME type appropriate for the repository format.
 # @param storage_write_policy
-#   Controls if deployments of and updates to artifacts are allowed.
+#   Controls if deployments of and updates to assets are allowed.
 # @param component_proprietary_components
 #   Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Firewall).
-# @param repodata_depth
-#   Set the depth of the directory in which the repodata/repomd.xml will be generated.
-# @param deploy_policy
-#   Set the deploy policy, whether or not a redeploy of rpm's is allowed.
+# @param content_disposition
+#   Content Disposition
 # @param cleanup_policy_names
 #   Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
 #
 # @example
-#   nexus::resource::repository::yum::hosted { 'yum-hosted':
-#     repodata_depth => 5,
-#   }
+#   nexus::resource::repository::raw::hosted { 'raw-hosted': }
 #
-define nexus::resource::repository::yum::hosted (
+define nexus::resource::repository::raw::hosted (
   Enum['present', 'absent'] $ensure = 'present',
   Boolean $online = true,
   String[1] $storage_blob_store_name = $title,
   Boolean $storage_strict_content_type_validation = true,
-  Enum['ALLOW','ALLOW_ONCE','DENY'] $storage_write_policy = 'ALLOW_ONCE',
+  Enum['allow', 'allow_once', 'deny'] $storage_write_policy = 'allow_once',
   Boolean $component_proprietary_components = true,
-  Integer[0, 5] $repodata_depth = 0,
-  Enum['STRICT','PERMISSIVE'] $deploy_policy = 'STRICT',
+  Enum['INLINE', 'ATTACHMENT'] $content_disposition = 'ATTACHMENT',
   Array[String[1]] $cleanup_policy_names = [],
 ) {
   nexus_repository { $title:
     ensure     => $ensure,
-    format     => 'yum',
+    format     => 'raw',
     type       => 'hosted',
     attributes => {
       'online'    => $online,
@@ -53,9 +49,8 @@ define nexus::resource::repository::yum::hosted (
       'component' => {
         'proprietaryComponents' => $component_proprietary_components,
       },
-      'yum'       => {
-        'repodataDepth' => $repodata_depth,
-        'deployPolicy'  => $deploy_policy,
+      'raw'       => {
+        'contentDisposition' => $content_disposition,
       },
     },
   }

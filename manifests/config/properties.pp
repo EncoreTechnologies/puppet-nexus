@@ -34,4 +34,19 @@ class nexus::config::properties {
     match => '^nexus-work=',
     line  => "nexus-work=${nexus::work_dir}",
   }
+
+  if $nexus::manage_datastore {
+    file_line { 'nexus-datastore-enabled':
+      path  => $nexus_properties_file,
+      match => '^nexus.datastore.enabled',
+      line  => "nexus.datastore.enabled=${nexus::manage_datastore}",
+    }
+  } else {
+    file_line { 'nexus-datastore-enabled':
+      ensure            => absent,
+      path              => $nexus_properties_file,
+      match             => '^nexus.datastore.enabled=',
+      match_for_absence => true,
+    }
+  }
 }

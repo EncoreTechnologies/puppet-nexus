@@ -9,9 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `params.pp` to manage params in module
 - `exec['nexus permissions']` in `nexus::package` to manage file permissions
 - `manage_user` in `params.pp` to manage the nexus user
+- Reworking module to conform to newer standards
+
+- Extended test suite to puppet 8
+- Add docker subdomain connector parameter
+- `nexus::resource::repository::rubygems::proxy` to manage rubygems proxy repositories
+- `nexus::resource::repository::raw::hosted` to manage raw hosted repositories
+- `nexus::resource::repository::pypi::proxy` to manage pypi proxy repositories
+- `cleanup_policy_names` added to all repository types
+- Option to install nexus by package
+- Option to set java runtime version (nexus >= 3.67.0-03)
 
 ### Changed
-- Reworking module to conform to newer standards
+- PDK version to 3.0.0
+- Codestyle adjustmensts
+
+### Removed
+- Support for end of life puppet 6
 
 ## [3.5.0]
 ### Added

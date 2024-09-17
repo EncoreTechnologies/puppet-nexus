@@ -8,6 +8,7 @@
 #   Auto-block outbound connections on the repository if remote peer is detected as unreachable/unresponsive.
 # @param http_client_blocked
 #   Block outbound connections on the repository.
+# @param authentication
 # @param negative_cache_enabled
 #   Cache responses for content not present in the proxied repository.
 # @param negative_cache_time_to_live
@@ -43,9 +44,11 @@
 #   Allow Nexus Repository Manager to download and cache foreign layers.
 # @param docker_proxy_foreign_layer_url_whitelist
 #   Regular expressions used to identify URLs that are allowed for foreign layer requests.
+# @param cleanup_policy_names
+#   Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
 #
 # @example
-#   nexus::repository::docker::proxy { 'docker-docker.io':
+#   nexus::resource::repository::docker::proxy { 'docker-docker.io':
 #      proxy_remote_url => 'https://registry-1.docker.io',
 #   }
 #
@@ -54,6 +57,13 @@ define nexus::resource::repository::docker::proxy (
   Enum['present', 'absent'] $ensure = 'present',
   Boolean $http_client_blocked = false,
   Boolean $http_client_auto_block = true,
+  Optional[Struct[{
+        type => Enum['username', 'ntlm'],
+        username => String[1],
+        password => String[1],
+        Optional[ntlmHost] => Optional[String[1]],
+        Optional[ntlmDomain] => Optional[String[1]],
+  }]] $authentication = undef,
   Boolean $negative_cache_enabled = true,
   Integer $negative_cache_time_to_live = 1440,
   Boolean $online = true,
@@ -71,6 +81,7 @@ define nexus::resource::repository::docker::proxy (
   Optional[Stdlib::HTTPSUrl] $docker_proxy_index_url = undef,
   Boolean $docker_proxy_cache_foreign_layers = false,
   Array[String[1]] $docker_proxy_foreign_layer_url_whitelist = [],
+  Array[String[1]] $cleanup_policy_names = [],
 ) {
   nexus_repository { $title:
     ensure     => $ensure,
@@ -83,7 +94,9 @@ define nexus::resource::repository::docker::proxy (
         'strictContentTypeValidation' => $storage_strict_content_type_validation,
         'writePolicy'                 => $storage_write_policy,
       },
-      'cleanup'         => undef,
+      'cleanup'         => {
+        'policyNames' => $cleanup_policy_names,
+      },
       'proxy'           => {
         'remoteUrl'      => $proxy_remote_url,
         'contentMaxAge'  => $proxy_content_max_age,
@@ -104,7 +117,7 @@ define nexus::resource::repository::docker::proxy (
           'enableCookies'           => false,
           'useTrustStore'           => false,
         },
-        'authentication' => undef,
+        'authentication' => $authentication,
       },
       'routingRuleName' => undef,
       'docker'          => {

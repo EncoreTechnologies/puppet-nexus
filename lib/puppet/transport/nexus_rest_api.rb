@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# Core part of puppet used to connect to external services
-module Puppet::Transport
+# Transport Puppet Module to interact with RestAPI
+module Puppet::Transport # rubocop:disable Style/ClassAndModuleChildren
   # The main connection class to a NexusRestApi endpoint
   class NexusRestApi
     # Initialise this transport with a set of credentials

@@ -13,7 +13,7 @@ describe 'nexus::config::email' do
       'username' => '',
       'password' => nil,
       'fromAddress' => 'nexus@example.org',
-      'subjectPrefix' => '',
+      'subjectPrefix' => nil,
       'startTlsEnabled' => false,
       'startTlsRequired' => false,
       'sslOnConnectEnabled' => false,

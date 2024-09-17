@@ -29,6 +29,8 @@
 #   Validate that all content uploaded to this repository is of a MIME type appropriate for the repository format.
 # @param storage_write_policy
 #   Controls if deployments of and updates to artifacts are allowed.
+# @param cleanup_policy_names
+#   Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
 #
 # @example
 #   nexus::repository::npm::proxy { 'npm-npmjs.org':
@@ -50,6 +52,7 @@ define nexus::resource::repository::npm::proxy (
   String[1] $storage_blob_store_name = $title,
   Boolean $storage_strict_content_type_validation = true,
   Enum['ALLOW','ALLOW_ONCE','DENY'] $storage_write_policy = 'ALLOW',
+  Array[String[1]] $cleanup_policy_names = [],
 ) {
   nexus_repository { $title:
     ensure     => $ensure,
@@ -62,7 +65,9 @@ define nexus::resource::repository::npm::proxy (
         'strictContentTypeValidation' => $storage_strict_content_type_validation,
         'writePolicy'                 => $storage_write_policy,
       },
-      'cleanup'         => undef,
+      'cleanup'         => {
+        'policyNames' => $cleanup_policy_names,
+      },
       'proxy'           => {
         'remoteUrl'      => $proxy_remote_url,
         'contentMaxAge'  => $proxy_content_max_age,

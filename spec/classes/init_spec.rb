@@ -12,7 +12,7 @@ describe 'nexus', type: :class do
 
         it 'fails if no version configured' do
           expect { is_expected.to compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
-                                                           %r{expects a value for parameter 'version'})
+                                                           %r{nexus::version must be set when using package_type => src})
         end
       end
 
@@ -25,7 +25,7 @@ describe 'nexus', type: :class do
 
         it 'fails if no version configured' do
           expect { is_expected.to compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
-                                                           %r{parameter 'version' expects a match for Pattern})
+                                                           %r{parameter 'version' expects an undef value or a match for Pattern})
         end
       end
 
@@ -181,6 +181,21 @@ describe 'nexus', type: :class do
           is_expected.not_to contain_group('nexus')
           is_expected.not_to contain_user('nexus')
         end
+      end
+
+      context 'using pkg package type' do
+        let(:params) do
+          {
+            'package_type' => 'pkg',
+          }
+        end
+
+        it { is_expected.to compile }
+        it {
+          is_expected.to contain_package('nexus').with(
+            'ensure' => 'installed',
+          )
+        }
       end
     end
   end

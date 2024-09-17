@@ -14,6 +14,7 @@
 * [`nexus::config::default_repositories`](#nexus--config--default_repositories): Removes the default repositories for maven and nuget
 * [`nexus::config::device`](#nexus--config--device): Create puppet device config used to connect to the rest api
 * [`nexus::config::email`](#nexus--config--email): Manage the nexus repository manager email settings
+* [`nexus::config::postgresql_datastore`](#nexus--config--postgresql_datastore): Manage the nexus postgresql datastore settings
 * [`nexus::config::properties`](#nexus--config--properties): A short summary of the purpose of this class
 * [`nexus::plugin::composer`](#nexus--plugin--composer): Install the composer repository format plugin
 
@@ -35,6 +36,9 @@
 * [`nexus::resource::repository::npm::group`](#nexus--resource--repository--npm--group): Resource to manage npm group repository
 * [`nexus::resource::repository::npm::hosted`](#nexus--resource--repository--npm--hosted): Resource to manage npm hosted repository
 * [`nexus::resource::repository::npm::proxy`](#nexus--resource--repository--npm--proxy): Resource to manage npm proxy repository
+* [`nexus::resource::repository::pypi::proxy`](#nexus--resource--repository--pypi--proxy): Resource to manage PyPi proxy repository
+* [`nexus::resource::repository::raw::hosted`](#nexus--resource--repository--raw--hosted): Resource to manage raw hosted repository
+* [`nexus::resource::repository::rubygems::proxy`](#nexus--resource--repository--rubygems--proxy): Resource to manage RubyGems proxy repository
 * [`nexus::resource::repository::yum::hosted`](#nexus--resource--repository--yum--hosted): Resource to manage yum hosted repository
 * [`nexus::resource::repository::yum::proxy`](#nexus--resource--repository--yum--proxy): Resource to manage yum proxy repository
 
@@ -42,6 +46,7 @@
 
 * [`nexus_blobstore`](#nexus_blobstore): Raw provider to configure blobstore over the nexus repository manager rest api.  Please use the defined types instead of this one directly.
 * [`nexus_repository`](#nexus_repository): Raw provider to configure repository over the nexus repository manager rest api.  Please use the defined types instead of this one directly.
+* [`nexus_role`](#nexus_role): Manage nexus repository roles
 * [`nexus_setting`](#nexus_setting): Raw provider to set settings over the nexus repository manager rest api.  Please use nexus::config::* classes instead of this one directly.
 * [`nexus_user`](#nexus_user): Manage nexus repository users
 
@@ -68,10 +73,8 @@ class{ 'nexus':
 
 The following parameters are available in the `nexus` class:
 
-* [`version`](#-nexus--version)
 * [`download_folder`](#-nexus--download_folder)
 * [`download_site`](#-nexus--download_site)
-* [`download_proxy`](#-nexus--download_proxy)
 * [`install_root`](#-nexus--install_root)
 * [`work_dir`](#-nexus--work_dir)
 * [`user`](#-nexus--user)
@@ -82,14 +85,18 @@ The following parameters are available in the `nexus` class:
 * [`manage_config`](#-nexus--manage_config)
 * [`manage_user`](#-nexus--manage_user)
 * [`manage_work_dir`](#-nexus--manage_work_dir)
+* [`manage_datastore`](#-nexus--manage_datastore)
 * [`purge_installations`](#-nexus--purge_installations)
 * [`purge_default_repositories`](#-nexus--purge_default_repositories)
-
-##### <a name="-nexus--version"></a>`version`
-
-Data type: `Pattern[/3.\d+.\d+-\d+/]`
-
-The version to download, install and manage.
+* [`package_type`](#-nexus--package_type)
+* [`package_ensure`](#-nexus--package_ensure)
+* [`download_proxy`](#-nexus--download_proxy)
+* [`version`](#-nexus--version)
+* [`java_runtime`](#-nexus--java_runtime)
+* [`package_name`](#-nexus--package_name)
+* [`postgresql_username`](#-nexus--postgresql_username)
+* [`postgresql_password`](#-nexus--postgresql_password)
+* [`postgresql_jdbcurl`](#-nexus--postgresql_jdbcurl)
 
 ##### <a name="-nexus--download_folder"></a>`download_folder`
 
@@ -102,12 +109,6 @@ Destination folder of the downloaded archive.
 Data type: `Stdlib::HTTPUrl`
 
 Download uri which will be appended with filename of the archive to download.
-
-##### <a name="-nexus--download_proxy"></a>`download_proxy`
-
-Data type: `Optional[Stdlib::HTTPUrl]`
-
-Proxyserver address which will be used to download the archive file.
 
 ##### <a name="-nexus--install_root"></a>`install_root`
 
@@ -169,6 +170,12 @@ Data type: `Boolean`
 
 Set if this module should manage the work directory of the nexus repository manager.
 
+##### <a name="-nexus--manage_datastore"></a>`manage_datastore`
+
+Data type: `Boolean`
+
+Set if this module should manage datastore - Note that you need a licence for postgresql backend
+
 ##### <a name="-nexus--purge_installations"></a>`purge_installations`
 
 Data type: `Boolean`
@@ -180,6 +187,76 @@ Set this option if you want old installations of nexus repository manager to get
 Data type: `Boolean`
 
 Set this option if you want to remove the default created maven and nuget repositories.
+
+##### <a name="-nexus--package_type"></a>`package_type`
+
+Data type: `Enum['src', 'pkg']`
+
+Select 'src' for Source download & install. 'pkg' will fetch te specified package and version
+from repos you must provide.
+
+##### <a name="-nexus--package_ensure"></a>`package_ensure`
+
+Data type: `String`
+
+The version to install. See https://puppet.com/docs/puppet/7/types/package.html#package-attribute-ensure
+
+##### <a name="-nexus--download_proxy"></a>`download_proxy`
+
+Data type: `Optional[Stdlib::HTTPUrl]`
+
+Proxyserver address which will be used to download the archive file.
+
+Default value: `undef`
+
+##### <a name="-nexus--version"></a>`version`
+
+Data type: `Optional[Pattern[/3.\d+.\d+-\d+/]]`
+
+The version to download, install and manage.
+
+Default value: `undef`
+
+##### <a name="-nexus--java_runtime"></a>`java_runtime`
+
+Data type: `Optional[Enum['java8', 'java11']]`
+
+The Java runtime to be utilized. Relevant only for Nexus versions >= 3.67.0-03 and < 3.71.0.
+
+Default value: `undef`
+
+##### <a name="-nexus--package_name"></a>`package_name`
+
+Data type: `Optional[String]`
+
+The name of the package to install. Default 'nexus'
+
+Default value: `undef`
+
+##### <a name="-nexus--postgresql_username"></a>`postgresql_username`
+
+Data type: `Optional[String[1]]`
+
+Postgresql Username - Only available in Sonatype Nexus Repository Pro
+
+Default value: `undef`
+
+##### <a name="-nexus--postgresql_password"></a>`postgresql_password`
+
+Data type: `Optional[String[1]]`
+
+Postgresql Password - Only available in Sonatype Nexus Repository Pro
+
+Default value: `undef`
+
+##### <a name="-nexus--postgresql_jdbcurl"></a>`postgresql_jdbcurl`
+
+Data type: `Optional[String[1]]`
+
+Postgresql jdbcUrl. Formatted as jdbc\:postgresql\://<database-host>\:<database-port>/nexus
+Only available in Sonatype Nexus Repository Pro
+
+Default value: `undef`
 
 ### <a name="nexus--config--admin"></a>`nexus::config::admin`
 
@@ -375,7 +452,7 @@ Default value: `''`
 
 ##### <a name="-nexus--config--email--password"></a>`password`
 
-Data type: `Optional[String]`
+Data type: `Optional[String[1]]`
 
 The password to connect to the smtp server.
 
@@ -391,11 +468,11 @@ Default value: `'nexus@example.org'`
 
 ##### <a name="-nexus--config--email--subject_prefix"></a>`subject_prefix`
 
-Data type: `String`
+Data type: `Optional[String[1]]`
 
 Prefix which will be added to all emails.
 
-Default value: `''`
+Default value: `undef`
 
 ##### <a name="-nexus--config--email--start_tls_enabled"></a>`start_tls_enabled`
 
@@ -436,6 +513,10 @@ Data type: `Boolean`
 Use certificates stored in the Nexus truststore to connect to external systems.
 
 Default value: `false`
+
+### <a name="nexus--config--postgresql_datastore"></a>`nexus::config::postgresql_datastore`
+
+Only available in Sonatype Nexus Repository Pro
 
 ### <a name="nexus--config--properties"></a>`nexus::config::properties`
 
@@ -549,6 +630,7 @@ The following parameters are available in the `nexus::resource::repository::apt:
 * [`storage_blob_store_name`](#-nexus--resource--repository--apt--proxy--storage_blob_store_name)
 * [`storage_strict_content_type_validation`](#-nexus--resource--repository--apt--proxy--storage_strict_content_type_validation)
 * [`storage_write_policy`](#-nexus--resource--repository--apt--proxy--storage_write_policy)
+* [`cleanup_policy_names`](#-nexus--resource--repository--apt--proxy--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--apt--proxy--apt_distribution"></a>`apt_distribution`
 
@@ -659,6 +741,14 @@ Controls if deployments of and updates to artifacts are allowed.
 
 Default value: `'ALLOW'`
 
+##### <a name="-nexus--resource--repository--apt--proxy--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
 ### <a name="nexus--resource--repository--docker--group"></a>`nexus::resource::repository::docker::group`
 
 Resource to manage docker group repository
@@ -689,6 +779,7 @@ The following parameters are available in the `nexus::resource::repository::dock
 * [`docker_force_basic_auth`](#-nexus--resource--repository--docker--group--docker_force_basic_auth)
 * [`docker_http_port`](#-nexus--resource--repository--docker--group--docker_http_port)
 * [`docker_https_port`](#-nexus--resource--repository--docker--group--docker_https_port)
+* [`docker_subdomain`](#-nexus--resource--repository--docker--group--docker_subdomain)
 
 ##### <a name="-nexus--resource--repository--docker--group--ensure"></a>`ensure`
 
@@ -763,6 +854,14 @@ Create an HTTPS connector at specified port. Normally used if the server is conf
 
 Default value: `undef`
 
+##### <a name="-nexus--resource--repository--docker--group--docker_subdomain"></a>`docker_subdomain`
+
+Data type: `Optional[Stdlib::Fqdn]`
+
+Use the following subdomain to make push and pull requests for this repository.
+
+Default value: `undef`
+
 ### <a name="nexus--resource--repository--docker--hosted"></a>`nexus::resource::repository::docker::hosted`
 
 Resource to manage docker hosted repository
@@ -790,6 +889,8 @@ The following parameters are available in the `nexus::resource::repository::dock
 * [`docker_force_basic_auth`](#-nexus--resource--repository--docker--hosted--docker_force_basic_auth)
 * [`docker_http_port`](#-nexus--resource--repository--docker--hosted--docker_http_port)
 * [`docker_https_port`](#-nexus--resource--repository--docker--hosted--docker_https_port)
+* [`docker_subdomain`](#-nexus--resource--repository--docker--hosted--docker_subdomain)
+* [`cleanup_policy_names`](#-nexus--resource--repository--docker--hosted--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--docker--hosted--ensure"></a>`ensure`
 
@@ -872,6 +973,22 @@ Create an HTTPS connector at specified port. Normally used if the server is conf
 
 Default value: `undef`
 
+##### <a name="-nexus--resource--repository--docker--hosted--docker_subdomain"></a>`docker_subdomain`
+
+Data type: `Optional[Stdlib::Fqdn]`
+
+Use the following subdomain to make push and pull requests for this repository.
+
+Default value: `undef`
+
+##### <a name="-nexus--resource--repository--docker--hosted--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
 ### <a name="nexus--resource--repository--docker--proxy"></a>`nexus::resource::repository::docker::proxy`
 
 Resource to manage docker proxy repository
@@ -881,7 +998,7 @@ Resource to manage docker proxy repository
 ##### 
 
 ```puppet
-nexus::repository::docker::proxy { 'docker-docker.io':
+nexus::resource::repository::docker::proxy { 'docker-docker.io':
    proxy_remote_url => 'https://registry-1.docker.io',
 }
 ```
@@ -894,6 +1011,7 @@ The following parameters are available in the `nexus::resource::repository::dock
 * [`ensure`](#-nexus--resource--repository--docker--proxy--ensure)
 * [`http_client_auto_block`](#-nexus--resource--repository--docker--proxy--http_client_auto_block)
 * [`http_client_blocked`](#-nexus--resource--repository--docker--proxy--http_client_blocked)
+* [`authentication`](#-nexus--resource--repository--docker--proxy--authentication)
 * [`negative_cache_enabled`](#-nexus--resource--repository--docker--proxy--negative_cache_enabled)
 * [`negative_cache_time_to_live`](#-nexus--resource--repository--docker--proxy--negative_cache_time_to_live)
 * [`online`](#-nexus--resource--repository--docker--proxy--online)
@@ -911,6 +1029,7 @@ The following parameters are available in the `nexus::resource::repository::dock
 * [`docker_proxy_index_url`](#-nexus--resource--repository--docker--proxy--docker_proxy_index_url)
 * [`docker_proxy_cache_foreign_layers`](#-nexus--resource--repository--docker--proxy--docker_proxy_cache_foreign_layers)
 * [`docker_proxy_foreign_layer_url_whitelist`](#-nexus--resource--repository--docker--proxy--docker_proxy_foreign_layer_url_whitelist)
+* [`cleanup_policy_names`](#-nexus--resource--repository--docker--proxy--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--docker--proxy--proxy_remote_url"></a>`proxy_remote_url`
 
@@ -941,6 +1060,24 @@ Data type: `Boolean`
 Block outbound connections on the repository.
 
 Default value: `false`
+
+##### <a name="-nexus--resource--repository--docker--proxy--authentication"></a>`authentication`
+
+Data type:
+
+```puppet
+Optional[Struct[{
+        type => Enum['username', 'ntlm'],
+        username => String[1],
+        password => String[1],
+        Optional[ntlmHost] => Optional[String[1]],
+        Optional[ntlmDomain] => Optional[String[1]],
+  }]]
+```
+
+
+
+Default value: `undef`
 
 ##### <a name="-nexus--resource--repository--docker--proxy--negative_cache_enabled"></a>`negative_cache_enabled`
 
@@ -1079,6 +1216,14 @@ Regular expressions used to identify URLs that are allowed for foreign layer req
 
 Default value: `[]`
 
+##### <a name="-nexus--resource--repository--docker--proxy--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
 ### <a name="nexus--resource--repository--npm--group"></a>`nexus::resource::repository::npm::group`
 
 Resource to manage npm group repository
@@ -1156,7 +1301,7 @@ Resource to manage npm hosted repository
 ##### 
 
 ```puppet
-nexus::repository::npm::hosted { 'npm-hosted': }
+nexus::resource::repository::npm::hosted { 'npm-hosted': }
 ```
 
 #### Parameters
@@ -1169,6 +1314,7 @@ The following parameters are available in the `nexus::resource::repository::npm:
 * [`storage_strict_content_type_validation`](#-nexus--resource--repository--npm--hosted--storage_strict_content_type_validation)
 * [`storage_write_policy`](#-nexus--resource--repository--npm--hosted--storage_write_policy)
 * [`component_proprietary_components`](#-nexus--resource--repository--npm--hosted--component_proprietary_components)
+* [`cleanup_policy_names`](#-nexus--resource--repository--npm--hosted--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--npm--hosted--ensure"></a>`ensure`
 
@@ -1205,7 +1351,7 @@ Default value: `true`
 
 ##### <a name="-nexus--resource--repository--npm--hosted--storage_write_policy"></a>`storage_write_policy`
 
-Data type: `Enum['allow_once']`
+Data type: `Enum['allow', 'allow_once', 'deny']`
 
 Controls if deployments of and updates to artifacts are allowed.
 
@@ -1218,6 +1364,14 @@ Data type: `Boolean`
 Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Firewall).
 
 Default value: `true`
+
+##### <a name="-nexus--resource--repository--npm--hosted--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
 
 ### <a name="nexus--resource--repository--npm--proxy"></a>`nexus::resource::repository::npm::proxy`
 
@@ -1251,6 +1405,7 @@ The following parameters are available in the `nexus::resource::repository::npm:
 * [`storage_blob_store_name`](#-nexus--resource--repository--npm--proxy--storage_blob_store_name)
 * [`storage_strict_content_type_validation`](#-nexus--resource--repository--npm--proxy--storage_strict_content_type_validation)
 * [`storage_write_policy`](#-nexus--resource--repository--npm--proxy--storage_write_policy)
+* [`cleanup_policy_names`](#-nexus--resource--repository--npm--proxy--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--npm--proxy--proxy_remote_url"></a>`proxy_remote_url`
 
@@ -1363,6 +1518,383 @@ Controls if deployments of and updates to artifacts are allowed.
 
 Default value: `'ALLOW'`
 
+##### <a name="-nexus--resource--repository--npm--proxy--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
+### <a name="nexus--resource--repository--pypi--proxy"></a>`nexus::resource::repository::pypi::proxy`
+
+Resource to manage PyPi proxy repository
+
+#### Examples
+
+##### 
+
+```puppet
+nexus::resource::repository::pypi::proxy { 'pypi.org':
+   proxy_remote_url => 'https://pypi.org',
+}
+```
+
+#### Parameters
+
+The following parameters are available in the `nexus::resource::repository::pypi::proxy` defined type:
+
+* [`proxy_remote_url`](#-nexus--resource--repository--pypi--proxy--proxy_remote_url)
+* [`ensure`](#-nexus--resource--repository--pypi--proxy--ensure)
+* [`http_client_auto_block`](#-nexus--resource--repository--pypi--proxy--http_client_auto_block)
+* [`http_client_blocked`](#-nexus--resource--repository--pypi--proxy--http_client_blocked)
+* [`negative_cache_enabled`](#-nexus--resource--repository--pypi--proxy--negative_cache_enabled)
+* [`negative_cache_time_to_live`](#-nexus--resource--repository--pypi--proxy--negative_cache_time_to_live)
+* [`online`](#-nexus--resource--repository--pypi--proxy--online)
+* [`proxy_content_max_age`](#-nexus--resource--repository--pypi--proxy--proxy_content_max_age)
+* [`proxy_metadata_max_age`](#-nexus--resource--repository--pypi--proxy--proxy_metadata_max_age)
+* [`storage_blob_store_name`](#-nexus--resource--repository--pypi--proxy--storage_blob_store_name)
+* [`storage_strict_content_type_validation`](#-nexus--resource--repository--pypi--proxy--storage_strict_content_type_validation)
+* [`storage_write_policy`](#-nexus--resource--repository--pypi--proxy--storage_write_policy)
+* [`remove_quarantined`](#-nexus--resource--repository--pypi--proxy--remove_quarantined)
+* [`cleanup_policy_names`](#-nexus--resource--repository--pypi--proxy--cleanup_policy_names)
+
+##### <a name="-nexus--resource--repository--pypi--proxy--proxy_remote_url"></a>`proxy_remote_url`
+
+Data type: `Stdlib::HTTPSUrl`
+
+PyPi repository url like https://pypi.org.
+
+##### <a name="-nexus--resource--repository--pypi--proxy--ensure"></a>`ensure`
+
+Data type: `Enum['present', 'absent']`
+
+Define if the resource should be created/present or deleted/absent.
+
+Default value: `'present'`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--http_client_auto_block"></a>`http_client_auto_block`
+
+Data type: `Boolean`
+
+Auto-block outbound connections on the repository if remote peer is detected as unreachable/unresponsive.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--http_client_blocked"></a>`http_client_blocked`
+
+Data type: `Boolean`
+
+Block outbound connections on the repository.
+
+Default value: `false`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--negative_cache_enabled"></a>`negative_cache_enabled`
+
+Data type: `Boolean`
+
+Cache responses for content not present in the proxied repository.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--negative_cache_time_to_live"></a>`negative_cache_time_to_live`
+
+Data type: `Integer`
+
+How long to cache the fact that a file was not found in the repository (in minutes).
+
+Default value: `1440`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--online"></a>`online`
+
+Data type: `Boolean`
+
+Enable this repository in nexus repository manager that it can be used.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--proxy_content_max_age"></a>`proxy_content_max_age`
+
+Data type: `Integer`
+
+Max age of content (packages).
+
+Default value: `1440`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--proxy_metadata_max_age"></a>`proxy_metadata_max_age`
+
+Data type: `Integer`
+
+Max age of the repository metadata.
+
+Default value: `1440`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--storage_blob_store_name"></a>`storage_blob_store_name`
+
+Data type: `String[1]`
+
+The name of the blobstore inside of nexus repository manager to be used. We suggest to use a own blobstore for each
+defined repository.
+
+Default value: `$title`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--storage_strict_content_type_validation"></a>`storage_strict_content_type_validation`
+
+Data type: `Boolean`
+
+Validate that all content uploaded to this repository is of a MIME type appropriate for the repository format.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--storage_write_policy"></a>`storage_write_policy`
+
+Data type: `Enum['ALLOW','ALLOW_ONCE','DENY']`
+
+Controls if deployments of and updates to artifacts are allowed.
+
+Default value: `'ALLOW'`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--remove_quarantined"></a>`remove_quarantined`
+
+Data type: `Boolean`
+
+Remove Quarantined Versions.
+
+Default value: `false`
+
+##### <a name="-nexus--resource--repository--pypi--proxy--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
+### <a name="nexus--resource--repository--raw--hosted"></a>`nexus::resource::repository::raw::hosted`
+
+Resource to manage raw hosted repository
+
+#### Examples
+
+##### 
+
+```puppet
+nexus::resource::repository::raw::hosted { 'raw-hosted': }
+```
+
+#### Parameters
+
+The following parameters are available in the `nexus::resource::repository::raw::hosted` defined type:
+
+* [`ensure`](#-nexus--resource--repository--raw--hosted--ensure)
+* [`online`](#-nexus--resource--repository--raw--hosted--online)
+* [`storage_blob_store_name`](#-nexus--resource--repository--raw--hosted--storage_blob_store_name)
+* [`storage_strict_content_type_validation`](#-nexus--resource--repository--raw--hosted--storage_strict_content_type_validation)
+* [`storage_write_policy`](#-nexus--resource--repository--raw--hosted--storage_write_policy)
+* [`component_proprietary_components`](#-nexus--resource--repository--raw--hosted--component_proprietary_components)
+* [`content_disposition`](#-nexus--resource--repository--raw--hosted--content_disposition)
+* [`cleanup_policy_names`](#-nexus--resource--repository--raw--hosted--cleanup_policy_names)
+
+##### <a name="-nexus--resource--repository--raw--hosted--ensure"></a>`ensure`
+
+Data type: `Enum['present', 'absent']`
+
+Define if the resource should be created/present or deleted/absent.
+
+Default value: `'present'`
+
+##### <a name="-nexus--resource--repository--raw--hosted--online"></a>`online`
+
+Data type: `Boolean`
+
+Whether this repository accepts incoming requests.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--raw--hosted--storage_blob_store_name"></a>`storage_blob_store_name`
+
+Data type: `String[1]`
+
+The name of the blobstore inside of nexus repository manager to be used. We suggest to use a own blobstore for each
+defined repository.
+
+Default value: `$title`
+
+##### <a name="-nexus--resource--repository--raw--hosted--storage_strict_content_type_validation"></a>`storage_strict_content_type_validation`
+
+Data type: `Boolean`
+
+Whether to validate uploaded content's MIME type appropriate for the repository format.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--raw--hosted--storage_write_policy"></a>`storage_write_policy`
+
+Data type: `Enum['allow', 'allow_once', 'deny']`
+
+Controls if deployments of and updates to assets are allowed.
+
+Default value: `'allow_once'`
+
+##### <a name="-nexus--resource--repository--raw--hosted--component_proprietary_components"></a>`component_proprietary_components`
+
+Data type: `Boolean`
+
+Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Firewall).
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--raw--hosted--content_disposition"></a>`content_disposition`
+
+Data type: `Enum['INLINE', 'ATTACHMENT']`
+
+Content Disposition
+
+Default value: `'ATTACHMENT'`
+
+##### <a name="-nexus--resource--repository--raw--hosted--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
+### <a name="nexus--resource--repository--rubygems--proxy"></a>`nexus::resource::repository::rubygems::proxy`
+
+Resource to manage RubyGems proxy repository
+
+#### Examples
+
+##### 
+
+```puppet
+nexus::resource::repository::rubygems::proxy { 'rubygems.org':
+   proxy_remote_url => 'https://rubygems.org/',
+}
+```
+
+#### Parameters
+
+The following parameters are available in the `nexus::resource::repository::rubygems::proxy` defined type:
+
+* [`proxy_remote_url`](#-nexus--resource--repository--rubygems--proxy--proxy_remote_url)
+* [`ensure`](#-nexus--resource--repository--rubygems--proxy--ensure)
+* [`http_client_auto_block`](#-nexus--resource--repository--rubygems--proxy--http_client_auto_block)
+* [`http_client_blocked`](#-nexus--resource--repository--rubygems--proxy--http_client_blocked)
+* [`negative_cache_enabled`](#-nexus--resource--repository--rubygems--proxy--negative_cache_enabled)
+* [`negative_cache_time_to_live`](#-nexus--resource--repository--rubygems--proxy--negative_cache_time_to_live)
+* [`online`](#-nexus--resource--repository--rubygems--proxy--online)
+* [`proxy_content_max_age`](#-nexus--resource--repository--rubygems--proxy--proxy_content_max_age)
+* [`proxy_metadata_max_age`](#-nexus--resource--repository--rubygems--proxy--proxy_metadata_max_age)
+* [`storage_blob_store_name`](#-nexus--resource--repository--rubygems--proxy--storage_blob_store_name)
+* [`storage_strict_content_type_validation`](#-nexus--resource--repository--rubygems--proxy--storage_strict_content_type_validation)
+* [`storage_write_policy`](#-nexus--resource--repository--rubygems--proxy--storage_write_policy)
+* [`cleanup_policy_names`](#-nexus--resource--repository--rubygems--proxy--cleanup_policy_names)
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--proxy_remote_url"></a>`proxy_remote_url`
+
+Data type: `Stdlib::HTTPSUrl`
+
+RubyGems repository url like https://rubygems.org/.
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--ensure"></a>`ensure`
+
+Data type: `Enum['present', 'absent']`
+
+Define if the resource should be created/present or deleted/absent.
+
+Default value: `'present'`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--http_client_auto_block"></a>`http_client_auto_block`
+
+Data type: `Boolean`
+
+Auto-block outbound connections on the repository if remote peer is detected as unreachable/unresponsive.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--http_client_blocked"></a>`http_client_blocked`
+
+Data type: `Boolean`
+
+Block outbound connections on the repository.
+
+Default value: `false`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--negative_cache_enabled"></a>`negative_cache_enabled`
+
+Data type: `Boolean`
+
+Cache responses for content not present in the proxied repository.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--negative_cache_time_to_live"></a>`negative_cache_time_to_live`
+
+Data type: `Integer`
+
+How long to cache the fact that a file was not found in the repository (in minutes).
+
+Default value: `1440`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--online"></a>`online`
+
+Data type: `Boolean`
+
+Enable this repository in nexus repository manager that it can be used.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--proxy_content_max_age"></a>`proxy_content_max_age`
+
+Data type: `Integer`
+
+Max age of content (packages).
+
+Default value: `1440`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--proxy_metadata_max_age"></a>`proxy_metadata_max_age`
+
+Data type: `Integer`
+
+Max age of the repository metadata.
+
+Default value: `1440`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--storage_blob_store_name"></a>`storage_blob_store_name`
+
+Data type: `String[1]`
+
+The name of the blobstore inside of nexus repository manager to be used. We suggest to use a own blobstore for each
+defined repository.
+
+Default value: `$title`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--storage_strict_content_type_validation"></a>`storage_strict_content_type_validation`
+
+Data type: `Boolean`
+
+Validate that all content uploaded to this repository is of a MIME type appropriate for the repository format.
+
+Default value: `true`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--storage_write_policy"></a>`storage_write_policy`
+
+Data type: `Enum['ALLOW','ALLOW_ONCE','DENY']`
+
+Controls if deployments of and updates to artifacts are allowed.
+
+Default value: `'ALLOW'`
+
+##### <a name="-nexus--resource--repository--rubygems--proxy--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
 ### <a name="nexus--resource--repository--yum--hosted"></a>`nexus::resource::repository::yum::hosted`
 
 Resource to manage yum hosted repository
@@ -1389,6 +1921,7 @@ The following parameters are available in the `nexus::resource::repository::yum:
 * [`component_proprietary_components`](#-nexus--resource--repository--yum--hosted--component_proprietary_components)
 * [`repodata_depth`](#-nexus--resource--repository--yum--hosted--repodata_depth)
 * [`deploy_policy`](#-nexus--resource--repository--yum--hosted--deploy_policy)
+* [`cleanup_policy_names`](#-nexus--resource--repository--yum--hosted--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--yum--hosted--ensure"></a>`ensure`
 
@@ -1441,7 +1974,7 @@ Default value: `true`
 
 ##### <a name="-nexus--resource--repository--yum--hosted--repodata_depth"></a>`repodata_depth`
 
-Data type: `Integer`
+Data type: `Integer[0, 5]`
 
 Set the depth of the directory in which the repodata/repomd.xml will be generated.
 
@@ -1454,6 +1987,14 @@ Data type: `Enum['STRICT','PERMISSIVE']`
 Set the deploy policy, whether or not a redeploy of rpm's is allowed.
 
 Default value: `'STRICT'`
+
+##### <a name="-nexus--resource--repository--yum--hosted--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
 
 ### <a name="nexus--resource--repository--yum--proxy"></a>`nexus::resource::repository::yum::proxy`
 
@@ -1485,6 +2026,7 @@ The following parameters are available in the `nexus::resource::repository::yum:
 * [`storage_blob_store_name`](#-nexus--resource--repository--yum--proxy--storage_blob_store_name)
 * [`storage_strict_content_type_validation`](#-nexus--resource--repository--yum--proxy--storage_strict_content_type_validation)
 * [`storage_write_policy`](#-nexus--resource--repository--yum--proxy--storage_write_policy)
+* [`cleanup_policy_names`](#-nexus--resource--repository--yum--proxy--cleanup_policy_names)
 
 ##### <a name="-nexus--resource--repository--yum--proxy--proxy_remote_url"></a>`proxy_remote_url`
 
@@ -1581,6 +2123,14 @@ Controls if deployments of and updates to artifacts are allowed.
 
 Default value: `'ALLOW'`
 
+##### <a name="-nexus--resource--repository--yum--proxy--cleanup_policy_names"></a>`cleanup_policy_names`
+
+Data type: `Array[String[1]]`
+
+Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
+
+Default value: `[]`
+
 ## Resource types
 
 ### <a name="nexus_blobstore"></a>`nexus_blobstore`
@@ -1676,6 +2226,80 @@ namevar
 Data type: `String`
 
 The name of the resource you want to manage.
+
+### <a name="nexus_role"></a>`nexus_role`
+
+```puppet
+nexus_role { 'rolename':
+  ensure      => 'present',
+  id          => 'reader',
+  description => 'read access to raw repository',
+  privileges  => ['nx-repository-view-raw-*-read'],
+  roles       => '',
+}
+```
+
+#### Properties
+
+The following properties are available in the `nexus_role` type.
+
+##### `description`
+
+Data type: `Optional[String]`
+
+The description of the role.
+
+##### `ensure`
+
+Data type: `Enum[present, absent]`
+
+Whether this resource should be present or absent on the target system.
+
+Default value: `present`
+
+##### `name`
+
+Data type: `Optional[String]`
+
+The name of the role which will be the same like id.
+
+##### `privileges`
+
+Data type: `Optional[Array[String]]`
+
+The privileges the role should have
+
+##### `read_only`
+
+Data type: `Optional[Boolean]`
+
+Define as read only.
+
+##### `roles`
+
+Data type: `Optional[Array[String]]`
+
+Other roles the new role should have
+
+##### `source`
+
+Data type: `Optional[String]`
+
+The source of the role. Like local or LDAP
+
+#### Parameters
+
+The following parameters are available in the `nexus_role` type.
+
+* [`id`](#-nexus_role--id)
+
+##### <a name="-nexus_role--id"></a>`id`
+
+namevar
+
+Data type: `String`
+
+The id of the role
 
 ### <a name="nexus_setting"></a>`nexus_setting`
 

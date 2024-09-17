@@ -13,17 +13,20 @@
 #   Controls if deployments of and updates to artifacts are allowed.
 # @param component_proprietary_components
 #   Components in this repository count as proprietary for namespace conflict attacks (requires Sonatype Nexus Firewall).
+# @param cleanup_policy_names
+#   Apply a list of cleanup policies to the repository. If a cleanup policy doesn't exist, nothing happens.
 #
 # @example
-#   nexus::repository::npm::hosted { 'npm-hosted': }
+#   nexus::resource::repository::npm::hosted { 'npm-hosted': }
 #
 define nexus::resource::repository::npm::hosted (
   Enum['present', 'absent'] $ensure = 'present',
   Boolean $online = true,
   String[1] $storage_blob_store_name = $title,
   Boolean $storage_strict_content_type_validation = true,
-  Enum['allow_once'] $storage_write_policy = 'allow_once',
+  Enum['allow', 'allow_once', 'deny'] $storage_write_policy = 'allow_once',
   Boolean $component_proprietary_components = true,
+  Array[String[1]] $cleanup_policy_names = [],
 ) {
   nexus_repository { $title:
     ensure     => $ensure,
@@ -36,7 +39,9 @@ define nexus::resource::repository::npm::hosted (
         'strictContentTypeValidation' => $storage_strict_content_type_validation,
         'writePolicy'                 => $storage_write_policy,
       },
-      'cleanup'   => undef,
+      'cleanup'   => {
+        'policyNames' => $cleanup_policy_names,
+      },
       'component' => {
         'proprietaryComponents' => $component_proprietary_components,
       },

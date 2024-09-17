@@ -8,6 +8,10 @@ class nexus::config {
 
   contain nexus::config::properties
 
+  if $nexus::manage_datastore and $nexus::postgresql_username and $nexus::postgresql_password and $nexus::postgresql_jdbcurl {
+    contain nexus::config::postgresql_datastore
+  }
+
   if $nexus::manage_api_resources {
     contain nexus::config::admin
     contain nexus::config::device

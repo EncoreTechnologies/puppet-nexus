@@ -32,10 +32,10 @@ class nexus::config::email (
   Boolean $enabled = false,
   Stdlib::Host $host = 'localhost',
   Stdlib::Port $port = 25,
-  String $username = '',
-  Optional[String] $password = undef,
+  String $username = '', # lint:ignore:params_empty_string_assignment
+  Optional[String[1]] $password = undef,
   String[1] $from_address = 'nexus@example.org',
-  String $subject_prefix = '',
+  Optional[String[1]] $subject_prefix = undef,
   Boolean $start_tls_enabled = false,
   Boolean $start_tls_required = false,
   Boolean $ssl_on_connect_enabled = false,
