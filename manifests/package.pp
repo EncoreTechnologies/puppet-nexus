@@ -21,8 +21,8 @@ class nexus::package {
       # Ensure the install root directory exists
       file { $nexus::install_root:
         ensure => directory,
-        owner  => 'root',
-        group  => 'root',
+        owner  => $nexus::user,
+        group  => $nexus::group,
         mode   => '0755',
       }
 
