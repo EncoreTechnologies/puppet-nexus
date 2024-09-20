@@ -15,8 +15,9 @@ class nexus::service {
     content => template('nexus/nexus.systemd.erb'),
   }
   -> service { 'nexus':
-    ensure => running,
-    name   => 'nexus',
-    enable => true,
+    ensure  => running,
+    name    => 'nexus',
+    enable  => true,
+    require => Exec['nexus permissions'],
   }
 }
