@@ -37,6 +37,14 @@ class nexus::package {
         group         => 'root',
       }
 
+      exec { 'nexus permissions':
+        command   => "chown -R ${nexus::user}:${nexus::group} ${install_dir}",
+        path      => '/bin',
+        subscribe => Archive[$dl_file],
+        require   => Archive[$dl_file],
+        onlyif    => "[ $(stat -c '%U' '${install_dir}') != '${nexus::user}' ]",
+      }
+
       # Prevent "Couldn't flush user prefs" error - https://issues.sonatype.org/browse/NEXUS-3671
       file { ["${nexus::install_root}/.java", "${nexus::install_root}/.java/.userPrefs"]:
         ensure => directory,
