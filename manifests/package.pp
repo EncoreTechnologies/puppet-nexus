@@ -18,7 +18,12 @@ class nexus::package {
       $dl_file         = "${nexus::download_folder}/${nexus_archive}"
       $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
 
-      extlib::mkdir_p($nexus::install_root)
+      file { $nexus::install_root:
+        ensure => directory,
+        owner  => 'root',
+        group  => 'root',
+        mode   => '0755',
+      }
 
       archive { $dl_file:
         source        => $download_url,
@@ -30,7 +35,7 @@ class nexus::package {
         creates       => $install_dir,
         user          => 'root',
         group         => 'root',
-        require       => Extlib::Mkdir_p[$nexus::install_root],
+        require       => File[$nexus::install_root],  # Ensure the directory exists before extracting
       }
 
       exec { 'nexus permissions':
