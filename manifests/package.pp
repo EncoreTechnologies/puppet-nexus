@@ -18,6 +18,7 @@ class nexus::package {
       $dl_file         = "${nexus::download_folder}/${nexus_archive}"
       $install_dir     = "${nexus::install_root}/nexus-${nexus::version}"
 
+      # Ensure the install root directory exists
       file { $nexus::install_root:
         ensure => directory,
         owner  => 'root',
@@ -35,7 +36,6 @@ class nexus::package {
         creates       => $install_dir,
         user          => 'root',
         group         => 'root',
-        require       => File[$nexus::install_root],  # Ensure the directory exists before extracting
       }
 
       exec { 'nexus permissions':
