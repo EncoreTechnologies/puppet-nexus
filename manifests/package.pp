@@ -64,16 +64,15 @@ class nexus::package {
     $directories = [
       "${nexus::work_dir}/etc",
       "${nexus::work_dir}/log",
+      "${nexus::work_dir}/nexus3",
       "${nexus::work_dir}/orient",
       "${nexus::work_dir}/tmp",
     ]
 
-    file { $directories:
-      ensure  => directory,
-      owner   => $nexus::user,
-      group   => $nexus::group,
+    exec { 'create_nexus_directories':
+      command => "mkdir -p ${directories.join(' ')} && chown -R ${nexus::user}:${nexus::group} ${nexus::work_dir}",
+      path    => ['/bin', '/usr/bin'],
       require => Archive[$dl_file],
-      recurse => true,
       before  => Class['nexus::service'],
     }
   }
